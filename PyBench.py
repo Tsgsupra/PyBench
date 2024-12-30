@@ -2,6 +2,7 @@ import pygame
 import time
 import random
 import math
+import hashlib  # Importing hashlib for SHA-256
 from PIL import Image, ImageDraw, ImageFilter
 import os
 import psutil  # For CPU temperature
@@ -109,7 +110,10 @@ def intensive_floating_point_benchmark(num_iterations=500000):
     sum_of_values = sum(random_values)
     total_calculations += len(random_values)
     
-    return total_calculations, result, sum_of_values
+    # Hash the floating-point result using SHA-256
+    sha256_hash = hashlib.sha256(str(result).encode('utf-8')).hexdigest()  # Hash the floating-point result
+
+    return total_calculations, result, sum_of_values, sha256_hash
 
 # Function to perform disk benchmark
 def disk_benchmark(file_count=0):
@@ -146,7 +150,7 @@ def update_benchmark():
         last_time = current_time
     
     # Perform intensive floating point benchmark
-    floating_point_calculations, result, sum_of_values = intensive_floating_point_benchmark()
+    floating_point_calculations, result, sum_of_values, sha256_hash = intensive_floating_point_benchmark()
     
     # Perform disk benchmark
     write_time, read_time, file_size = disk_benchmark(disk_file_count)
@@ -155,7 +159,7 @@ def update_benchmark():
     # Get CPU temperature
     cpu_temp = get_cpu_temperature()
     
-    return fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values
+    return fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values, sha256_hash
 
 # Function to get CPU temperature
 def get_cpu_temperature():
@@ -222,13 +226,14 @@ while running:
             disk_spawning_complete = False  # Restart the spawning process
 
     # Update the benchmark and FPS counter
-    fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values = update_benchmark()
+    fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values, sha256_hash = update_benchmark()
 
     # Relay FPS, number of disks, floating point calculations, file size, and number of tests to the console (command prompt)
     cpu_temp_display = f"{cpu_temp:.2f}°C" if cpu_temp else "N/A"
     print(f"FPS: {fps:.2f} | Number of Disks: {len(disks)} | Floating Point Calculations: {floating_point_calculations} | "
           f"Disk Write: {write_time:.4f}s | Disk Read: {read_time:.4f}s | File Size: {file_size:.2f} MB | "
-          f"CPU Temp: {cpu_temp_display} | Result: {result:.4f} | Sum of Random Values: {sum_of_values:.4f}")
+          f"CPU Temp: {cpu_temp_display} | Result: {result:.4f} | Sum of Random Values: {sum_of_values:.4f} | "
+          f"SHA-256 Hash: {sha256_hash}")
 
     # Clear the screen
     screen.fill((0, 0, 0))
