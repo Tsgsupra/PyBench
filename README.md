@@ -9,4 +9,6 @@ Where to install Python: Python.org/Downloads
 
 If you wish to contribute, fork the project and submit a pull request once done. Copying the repository doesn't help. 
 
+Download PyBench.py, and install all libs, then put PyBench in a folder called PyBench and run. This Program was made for x64 computers.
+
 Made with love from TSG.
