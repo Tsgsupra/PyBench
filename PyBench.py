@@ -83,23 +83,29 @@ def generate_image():
     
     return blurred_image
 
-# Function to perform a variety of intensive floating-point operations
-def intensive_floating_point_benchmark(num_iterations=100000):
+# Function to perform a variety of intensive floating-point operations with variability
+def intensive_floating_point_benchmark(num_iterations=500000):
     total_calculations = 0
-    
-    # 1. Trigonometric Calculations (Sine and Cosine)
+    random.seed(time.time())  # Seed with current time to ensure randomness
+
+    # 1. Trigonometric Calculations (Sine and Cosine) with random multipliers and shifts
     result = 0.0
     for i in range(num_iterations):
-        result += math.sin(i * 0.1) * math.cos(i * 0.1)
+        multiplier = random.uniform(0.01, 0.1)  # Random multiplier for the angle
+        shift = random.uniform(0, math.pi)  # Random shift for the angle
+        result += math.sin(i * multiplier + shift) * math.cos(i * multiplier + shift)
         total_calculations += 1
     
-    # 2. Exponentiation and Logarithms
+    # 2. Exponentiation and Logarithms with random factors
     for i in range(num_iterations):
-        result += math.exp(i * 0.001) * math.log(i + 1)
+        base = random.uniform(1.01, 10.0)  # Random base for the exponentiation
+        exponent = random.uniform(0.1, 2.0)  # Random exponent
+        log_val = random.uniform(1, 10)  # Random log base
+        result += math.exp(i * 0.001) * math.log(i + log_val, base) ** exponent
         total_calculations += 1
 
     # 3. Large Scale Summation with Random Floating Point Numbers
-    random_values = [random.random() for _ in range(50000)]  # Reduced number of random values
+    random_values = [random.uniform(0.0, 100.0) for _ in range(100000)]  # Larger range for random values
     sum_of_values = sum(random_values)
     total_calculations += len(random_values)
     
@@ -112,7 +118,7 @@ def disk_benchmark(file_count=0):
     # Write test
     with open(file_path, "wb") as f:
         start_time = time.time()
-        f.write(os.urandom(1024 * 1024 * 30))  # Write 30 MB of random data
+        f.write(os.urandom(1024 * 1024 * 30))  # Write 30 MB of random data, change accordingly if you wish to go bigger or smaller
         write_time = time.time() - start_time
         file_size = os.path.getsize(file_path) / (1024 * 1024)  # File size in MB
     
@@ -149,7 +155,7 @@ def update_benchmark():
     # Get CPU temperature
     cpu_temp = get_cpu_temperature()
     
-    return fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp
+    return fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values
 
 # Function to get CPU temperature
 def get_cpu_temperature():
@@ -159,6 +165,7 @@ def get_cpu_temperature():
         for name, entries in temps.items():
             for entry in entries:
                 if name.startswith("core"):
+                   if name.startswith("intel"):
                     return entry.current
     except Exception as e:
         return None  # If unable to fetch the temperature
@@ -169,7 +176,7 @@ clock = pygame.time.Clock()
 
 # Disk management variables
 disks = []
-max_disks = 550  # Number of disks
+max_disks = 550  # Number of disks, also adjust to what you want, this program is open source
 disks_spawned_per_second = 15  # Increase the spawning rate of disks
 disks_deleted_per_second = 6  # Deleting 6 disks per second
 disk_delete_timer = time.time()
@@ -215,12 +222,13 @@ while running:
             disk_spawning_complete = False  # Restart the spawning process
 
     # Update the benchmark and FPS counter
-    fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp = update_benchmark()
+    fps, write_time, read_time, file_size, floating_point_calculations, cpu_temp, result, sum_of_values = update_benchmark()
 
     # Relay FPS, number of disks, floating point calculations, file size, and number of tests to the console (command prompt)
     cpu_temp_display = f"{cpu_temp:.2f}°C" if cpu_temp else "N/A"
     print(f"FPS: {fps:.2f} | Number of Disks: {len(disks)} | Floating Point Calculations: {floating_point_calculations} | "
-          f"Disk Write: {write_time:.4f}s | Disk Read: {read_time:.4f}s | File Size: {file_size:.2f} MB | CPU Temp: {cpu_temp_display}")
+          f"Disk Write: {write_time:.4f}s | Disk Read: {read_time:.4f}s | File Size: {file_size:.2f} MB | "
+          f"CPU Temp: {cpu_temp_display} | Result: {result:.4f} | Sum of Random Values: {sum_of_values:.4f}")
 
     # Clear the screen
     screen.fill((0, 0, 0))
